@@ -1,12 +1,8 @@
-from http import client
 from urllib import request
-
 import config.MongoConfig
 import pandas as pd
 
 from flask import Blueprint, request
-
-import constants.MongoConstants
 
 PANDA_LIB = Blueprint("PANDA_LIB", __name__)
 
@@ -17,13 +13,13 @@ def upload_file():
         if file is None:
             return "No file uploaded", 400
         df = pd.read_excel(file)
-        json_data = df.to_json(orient='records')
+        json_data = df.to_dict(orient='records')
 
         conn = config.MongoConfig.get_connect()
         db = conn['my_db']
         collection = db["my_collection"]
-        collection.insert_many[json_data]
-        client.close()
+        collection.insert_many(json_data)
+        conn.close()
         return "Data Updated successfully in mongoDB!!!"
     except Exception as e:
         print(e)

@@ -1,15 +1,26 @@
 from urllib import request
 import config.MongoConfig
 import pandas as pd
-
-from flask import Blueprint, request, jsonify
-
+from flask import Blueprint, request
+from flask_httpauth import HTTPBasicAuth
 from services.LogicalService import addAndUpdate
 from services.MongoRepo import findAll
 
 PANDA_LIB = Blueprint("PANDA_LIB", __name__)
+auth = HTTPBasicAuth()
+USER_DATA = {
+    "admin": "superkey"
+}
+
+@auth.verify_password
+def verify(username,password):
+    if not (username and password):
+        return False
+    return USER_DATA.get(username) == password
+
 
 @PANDA_LIB.route("/upload", methods=['POST'])
+@auth.login_required()
 def upload_file():
     try:
         file = request.files.get("data")
